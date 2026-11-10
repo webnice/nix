@@ -63,7 +63,7 @@ func TestTimeReset(t *testing.T) {
 	if v1.Valid {
 		t.Error(tplPropertyValid, errValidTrue)
 	}
-	v1.SetValid(time.Time{})
+	v1.Set(time.Time{})
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -79,7 +79,7 @@ func TestTimeNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isTimeValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(time.Time{})
+	v1.Set(time.Time{})
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -88,7 +88,7 @@ func TestTimeNullIfDefault(t *testing.T) {
 }
 
 func TestTimeMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewTime()
 	buf = v1.MustValue()
@@ -319,4 +319,19 @@ func TestTimeMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isTimeValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestTimeSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewTime()
+	v1.SetValid(time.Time{})
+	isTimeNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewTime()
+	v2.Set(time.Time{})
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

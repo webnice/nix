@@ -44,7 +44,14 @@ func NewIPPointerValue(ptr *net.IP) IP {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (i *IP) SetValid(value net.IP) { i.IP, i.Valid = append(i.IP[:0], value...), true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (i *IP) SetValid(value net.IP) {
+	i.IP, i.Valid = append(i.IP[:0], value...), true
+	i.NullIfDefault()
+}
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (i *IP) Set(value net.IP) { i.IP, i.Valid = append(i.IP[:0], value...), true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (i *IP) Reset() { i.IP, i.Valid = nil, false }
@@ -74,7 +81,7 @@ func (i *IP) Pointer() *net.IP {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (i *IP) Scan(value interface{}) (err error) {
+func (i *IP) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		i.IP, i.Valid = nil, false
@@ -108,7 +115,7 @@ func (i IP) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (i *IP) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -127,7 +134,7 @@ func (i *IP) UnmarshalJSON(data []byte) (err error) {
 		if i.IP == nil {
 			err = fmt.Errorf("can't parse %q as IP address", str)
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		var rex *regexp.Regexp
 		_, ipOK := x["IP"].(string)
 		valid, validOK := x["Valid"].(bool)

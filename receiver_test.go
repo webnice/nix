@@ -272,13 +272,13 @@ func TestValueReceiverDatabaseSQL(t *testing.T) {
 }
 
 // TestValueReceiverJSON Сериализация не адресуемых значений (переданных в json.Marshal
-// как interface{}, то есть без возможности взять адрес) обязана давать значение,
+// как any, то есть без возможности взять адрес) обязана давать значение,
 // а не объект вида {"Поле":…,"Valid":…}. При смене приёмника MarshalJSON() на *T
 // этот тест падает: значение перестаёт реализовать json.Marshaler.
 func TestValueReceiverJSON(t *testing.T) {
 	var cases = []struct {
 		name  string
-		value interface{}
+		value any
 		want  []byte
 	}{
 		{"Bool", NewBoolValue(true), []byte(`true`)},

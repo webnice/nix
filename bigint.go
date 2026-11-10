@@ -47,7 +47,22 @@ func NewBigIntPointerValue(ptr **big.Int) BigInt {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
 func (b *BigInt) SetValid(value *big.Int) {
+	if b.BigInt == nil {
+		b.BigInt = new(big.Int)
+	}
+	if value == nil {
+		b.BigInt.SetInt64(0)
+	} else {
+		b.BigInt.Set(value)
+	}
+	b.Valid = true
+	b.NullIfDefault()
+}
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (b *BigInt) Set(value *big.Int) {
 	if b.BigInt == nil {
 		b.BigInt = new(big.Int)
 	}
@@ -101,14 +116,14 @@ func (b *BigInt) ensureBigInt() {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (b *BigInt) Scan(value interface{}) (err error) {
+func (b *BigInt) Scan(value any) (err error) {
 	b.ensureBigInt()
 	switch x := value.(type) {
 	case nil:
 		b.Reset()
 		return
 	case *big.Int:
-		b.SetValid(x)
+		b.Set(x)
 	case string:
 		if _, ok := b.BigInt.SetString(x, 10); !ok {
 			err = fmt.Errorf("can't parse %q as big.Int", x)
@@ -146,7 +161,7 @@ func (b BigInt) Value() (driver.Value, error) {
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (b *BigInt) UnmarshalJSON(data []byte) (err error) {
 	b.ensureBigInt()
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -168,7 +183,7 @@ func (b *BigInt) UnmarshalJSON(data []byte) (err error) {
 		if _, ok := b.BigInt.SetString(string(data), 10); !ok {
 			err = fmt.Errorf("can't parse %q as big.Int", string(data))
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		var rex *regexp.Regexp
 		_, biOK := x["BigInt"].(string)
 		valid, validOK := x["Valid"].(bool)

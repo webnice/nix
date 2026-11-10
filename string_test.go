@@ -62,7 +62,7 @@ func TestStringReset(t *testing.T) {
 	if v1.Valid {
 		t.Error(tplPropertyValid, errValidTrue)
 	}
-	v1.SetValid(``)
+	v1.Set(``)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -78,7 +78,7 @@ func TestStringNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isStringValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(``)
+	v1.Set(``)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -87,7 +87,7 @@ func TestStringNullIfDefault(t *testing.T) {
 }
 
 func TestStringMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewString()
 	buf = v1.MustValue()
@@ -297,4 +297,19 @@ func TestStringMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isStringValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestStringSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewString()
+	v1.SetValid(``)
+	isStringNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewString()
+	v2.Set(``)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

@@ -44,7 +44,11 @@ func NewUint16PointerValue(ptr *uint16) Uint16 {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (u *Uint16) SetValid(value uint16) { u.Uint16, u.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (u *Uint16) SetValid(value uint16) { u.Uint16, u.Valid = value, true; u.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (u *Uint16) Set(value uint16) { u.Uint16, u.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (u *Uint16) Reset() { u.Uint16, u.Valid = 0, false }
@@ -74,7 +78,7 @@ func (u *Uint16) Pointer() *uint16 {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (u *Uint16) Scan(value interface{}) (err error) {
+func (u *Uint16) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		u.Uint16, u.Valid = 0, false
@@ -104,7 +108,7 @@ func (u Uint16) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (u *Uint16) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -124,7 +128,7 @@ func (u *Uint16) UnmarshalJSON(data []byte) (err error) {
 		var n uint64
 		n, err = strconv.ParseUint(str, 10, 16)
 		u.Uint16 = uint16(n)
-	case map[string]interface{}:
+	case map[string]any:
 		var rex *regexp.Regexp
 		_, uiOK := x["Uint16"].(float64)
 		valid, validOK := x["Valid"].(bool)

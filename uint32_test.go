@@ -26,7 +26,7 @@ func isUint32Valid(t *testing.T, u Uint32, from string) {
 		errValid  = "является недействительным, ожидалось действительное"
 	)
 
-	dv := interface{}(u.Uint32)
+	dv := any(u.Uint32)
 	if dv.(uint32) != uint32(math.MaxUint32) {
 		t.Errorf(errUint32, from, dv, uint32(math.MaxUint32))
 	}
@@ -76,7 +76,7 @@ func TestUint32Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestUint32NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isUint32Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestUint32NullIfDefault(t *testing.T) {
 }
 
 func TestUint32MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewUint32()
 	buf = v1.MustValue()
@@ -338,4 +338,19 @@ func TestUint32MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isUint32Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestUint32SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewUint32()
+	v1.SetValid(0)
+	isUint32Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewUint32()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

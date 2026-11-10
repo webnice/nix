@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func asString(src interface{}) string {
+func asString(src any) string {
 	const floatFormat = 'g'
 	var rv reflect.Value
 

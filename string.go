@@ -42,7 +42,11 @@ func NewStringPointerValue(ptr *string) String {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (s *String) SetValid(value string) { s.String, s.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (s *String) SetValid(value string) { s.String, s.Valid = value, true; s.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (s *String) Set(value string) { s.String, s.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (s *String) Reset() {
@@ -76,7 +80,7 @@ func (s *String) Pointer() *string {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (s *String) Scan(value interface{}) (err error) {
+func (s *String) Scan(value any) (err error) {
 	if value == nil {
 		s.Reset()
 		return
@@ -99,7 +103,7 @@ func (s String) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (s *String) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -110,7 +114,7 @@ func (s *String) UnmarshalJSON(data []byte) (err error) {
 		return
 	case string:
 		s.String = x
-	case map[string]interface{}:
+	case map[string]any:
 		err = json.Unmarshal(data, &s.String)
 	default:
 		err = fmt.Errorf("can't unmarshal %q into go value of type nix.String", reflect.TypeOf(v).Name())

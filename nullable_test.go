@@ -13,7 +13,7 @@ import (
 type nullableKind struct {
 	name string
 	// Значение и его строковая форма.
-	value   interface{}
+	value   any
 	str     string
 	zeroStr string
 	// Ожидаемый driver.Value для Value().
@@ -63,6 +63,16 @@ func testNullable[T nullableValue](t *testing.T, kc nullableKind) {
 		v1.Reset()
 		if v1.Valid || any(v1.Nullable) != any(zero) {
 			t.Error("Reset()", errWrong)
+		}
+		v2 := NewNullable[T]()
+		v2.SetValid(zero)
+		if v2.Valid {
+			t.Error("SetValid(zero)", errValidTrue)
+		}
+		v3 := NewNullable[T]()
+		v3.Set(zero)
+		if !v3.Valid {
+			t.Error("Set(zero)", errValidFalse)
 		}
 	})
 

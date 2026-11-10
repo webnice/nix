@@ -76,7 +76,7 @@ func TestFloat32Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestFloat32NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isFloat32Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestFloat32NullIfDefault(t *testing.T) {
 }
 
 func TestFloat32MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewFloat32()
 	buf = v1.MustValue()
@@ -349,4 +349,19 @@ func TestFloat32MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isFloat32Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestFloat32SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewFloat32()
+	v1.SetValid(0)
+	isFloat32Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewFloat32()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

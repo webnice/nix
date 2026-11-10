@@ -44,7 +44,11 @@ func NewFloat64PointerValue(ptr *float64) Float64 {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (f *Float64) SetValid(value float64) { f.Float64, f.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (f *Float64) SetValid(value float64) { f.Float64, f.Valid = value, true; f.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (f *Float64) Set(value float64) { f.Float64, f.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (f *Float64) Reset() { f.Float64, f.Valid = 0, false }
@@ -74,7 +78,7 @@ func (f *Float64) Pointer() *float64 {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (f *Float64) Scan(value interface{}) (err error) {
+func (f *Float64) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		f.Valid = false
@@ -102,7 +106,7 @@ func (f Float64) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (f *Float64) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -117,7 +121,7 @@ func (f *Float64) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 		f.Float64, err = strconv.ParseFloat(str, 64)
-	case map[string]interface{}:
+	case map[string]any:
 		err = json.Unmarshal(data, &f.Float64)
 	case nil:
 		f.Valid = false

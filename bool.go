@@ -41,7 +41,11 @@ func NewBoolPointerValue(ptr *bool) Bool {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (b *Bool) SetValid(value bool) { b.Bool, b.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (b *Bool) SetValid(value bool) { b.Bool, b.Valid = value, true; b.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (b *Bool) Set(value bool) { b.Bool, b.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (b *Bool) Reset() { b.Bool, b.Valid = false, false }
@@ -66,9 +70,9 @@ func (b *Bool) Pointer() *bool {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (b *Bool) Scan(value interface{}) (err error) {
+func (b *Bool) Scan(value any) (err error) {
 	var (
-		v  interface{}
+		v  any
 		ok bool
 	)
 
@@ -97,7 +101,7 @@ func (b Bool) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (b *Bool) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -105,7 +109,7 @@ func (b *Bool) UnmarshalJSON(data []byte) (err error) {
 	switch x := v.(type) {
 	case bool:
 		b.Bool = x
-	case map[string]interface{}:
+	case map[string]any:
 		value, okValue := x["Bool"].(bool)
 		valid, okValid := x["Valid"].(bool)
 		if !okValue || !okValid {

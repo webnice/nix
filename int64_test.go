@@ -63,7 +63,7 @@ func TestInt64Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error(tplPropertyValid, errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -79,7 +79,7 @@ func TestInt64NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isInt64Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -88,7 +88,7 @@ func TestInt64NullIfDefault(t *testing.T) {
 }
 
 func TestInt64MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewInt64()
 	buf = v1.MustValue()
@@ -320,4 +320,19 @@ func TestInt64MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isInt64Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestInt64SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewInt64()
+	v1.SetValid(0)
+	isInt64Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewInt64()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

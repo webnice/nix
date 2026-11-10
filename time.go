@@ -43,7 +43,11 @@ func NewTimePointerValue(ptr *time.Time) Time {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (t *Time) SetValid(value time.Time) { t.Time, t.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (t *Time) SetValid(value time.Time) { t.Time, t.Valid = value, true; t.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (t *Time) Set(value time.Time) { t.Time, t.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (t *Time) Reset() { t.Time, t.Valid = time.Time{}, false }
@@ -73,7 +77,7 @@ func (t *Time) Pointer() *time.Time {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (t *Time) Scan(value interface{}) (err error) {
+func (t *Time) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		t.Time, t.Valid = time.Time{}, false
@@ -104,7 +108,7 @@ func (t Time) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -115,7 +119,7 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 		return
 	case string:
 		err = t.Time.UnmarshalJSON(data)
-	case map[string]interface{}:
+	case map[string]any:
 		ti, tiOK := x["Time"].(string)
 		valid, validOK := x["Valid"].(bool)
 		if !tiOK || !validOK {

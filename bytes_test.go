@@ -84,7 +84,7 @@ func TestBytesNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isBytesValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid([]byte{})
+	v1.Set([]byte{})
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -93,7 +93,7 @@ func TestBytesNullIfDefault(t *testing.T) {
 }
 
 func TestBytesMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	bt := NewBytes()
 	buf = bt.MustValue()
@@ -334,5 +334,20 @@ func TestBytesMarshalBinary(t *testing.T) {
 	errorPanic(err)
 	if !bytes.Equal(item.MustValue(), []byte{}) || !item.Valid {
 		t.Error(errValueValid)
+	}
+}
+
+//goland:noinspection DuplicatedCode
+func TestBytesSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewBytes()
+	v1.SetValid([]byte{})
+	isNullBytes(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewBytes()
+	v2.Set([]byte{})
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
 	}
 }

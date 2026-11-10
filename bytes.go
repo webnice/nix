@@ -44,7 +44,16 @@ func NewBytesPointerValue(ptr *[]byte) Bytes {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
 func (bt *Bytes) SetValid(value []byte) {
+	var buf = make([]byte, len(value))
+	_ = copy(buf, value)
+	bt.Bytes, bt.Valid = bytes.NewBuffer(buf), true
+	bt.NullIfDefault()
+}
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (bt *Bytes) Set(value []byte) {
 	var buf = make([]byte, len(value))
 	_ = copy(buf, value)
 	bt.Bytes, bt.Valid = bytes.NewBuffer(buf), true
@@ -80,15 +89,15 @@ func (bt *Bytes) Pointer() *[]byte {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (bt *Bytes) Scan(value interface{}) (err error) {
+func (bt *Bytes) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		bt.Valid = false
 		return
 	case []byte:
-		bt.SetValid(value.([]byte))
+		bt.Set(value.([]byte))
 	case string:
-		bt.SetValid([]byte(value.(string)))
+		bt.Set([]byte(value.(string)))
 	default:
 		err = fmt.Errorf("can't scan type %T into nix.Bytes: %v", x, value)
 	}
@@ -110,7 +119,7 @@ func (bt Bytes) Value() (driver.Value, error) {
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (bt *Bytes) UnmarshalJSON(data []byte) (err error) {
 	var (
-		v   interface{}
+		v   any
 		buf []byte
 	)
 
@@ -121,7 +130,7 @@ func (bt *Bytes) UnmarshalJSON(data []byte) (err error) {
 	case nil:
 		bt.Valid = false
 		return
-	case map[string]interface{}:
+	case map[string]any:
 		value, okValue := x["Bytes"].(string)
 		valid, okValid := x["Valid"].(bool)
 		if !okValue || !okValid {
@@ -130,7 +139,7 @@ func (bt *Bytes) UnmarshalJSON(data []byte) (err error) {
 				"found %T and %T, respectively", x["Bytes"], x["Valid"])
 		}
 		if buf, err = base64.StdEncoding.DecodeString(value); err == nil {
-			bt.SetValid(buf)
+			bt.Set(buf)
 		}
 		bt.Valid = valid
 	}
@@ -174,7 +183,7 @@ func (bt *Bytes) UnmarshalText(text []byte) (err error) {
 		return
 	default:
 		if buf, err = base64.StdEncoding.DecodeString(str); err == nil {
-			bt.SetValid(buf)
+			bt.Set(buf)
 		}
 	}
 
@@ -212,7 +221,7 @@ func (bt *Bytes) UnmarshalBinary(data []byte) (err error) {
 	dec = gob.NewDecoder(reader)
 	item = new(wrapper.BytesWrapper)
 	if err = dec.Decode(item); err == nil {
-		bt.SetValid(item.Value)
+		bt.Set(item.Value)
 		bt.Valid = item.Valid
 	}
 

@@ -77,7 +77,7 @@ func TestDurationReset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -93,7 +93,7 @@ func TestDurationNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isDurationValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -102,7 +102,7 @@ func TestDurationNullIfDefault(t *testing.T) {
 }
 
 func TestDurationMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewDuration()
 	buf = v1.MustValue()
@@ -344,4 +344,19 @@ func TestDurationMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isDurationValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestDurationSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewDuration()
+	v1.SetValid(0)
+	isDurationNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewDuration()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

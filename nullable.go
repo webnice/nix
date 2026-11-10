@@ -56,7 +56,11 @@ func NewNullablePointerValue[T nullableValue](ptr *T) Nullable[T] {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (n *Nullable[T]) SetValid(value T) { n.Nullable, n.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (n *Nullable[T]) SetValid(value T) { n.Nullable, n.Valid = value, true; n.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (n *Nullable[T]) Set(value T) { n.Nullable, n.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (n *Nullable[T]) Reset() { var zero T; n.Nullable, n.Valid = zero, false }
@@ -88,7 +92,7 @@ func (n *Nullable[T]) Pointer() *T {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (n *Nullable[T]) Scan(value interface{}) (err error) {
+func (n *Nullable[T]) Scan(value any) (err error) {
 	if value == nil {
 		n.Reset()
 		return

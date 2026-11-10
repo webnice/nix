@@ -48,7 +48,11 @@ func NewUUIDPointerValue(ptr *[16]byte) UUID {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (u *UUID) SetValid(value [16]byte) { u.UUID, u.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (u *UUID) SetValid(value [16]byte) { u.UUID, u.Valid = value, true; u.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (u *UUID) Set(value [16]byte) { u.UUID, u.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (u *UUID) Reset() { u.UUID, u.Valid = [16]byte{}, false }
@@ -78,7 +82,7 @@ func (u *UUID) Pointer() *[16]byte {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (u *UUID) Scan(value interface{}) (err error) {
+func (u *UUID) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		u.UUID, u.Valid = [16]byte{}, false
@@ -109,7 +113,7 @@ func (u UUID) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (u *UUID) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -122,7 +126,7 @@ func (u *UUID) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 		u.UUID, err = uuidParse(str)
-	case map[string]interface{}:
+	case map[string]any:
 		var rex *regexp.Regexp
 		_, uuOK := x["UUID"].(string)
 		valid, validOK := x["Valid"].(bool)

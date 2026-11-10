@@ -44,7 +44,14 @@ func NewDurationPointerValue(ptr *time.Duration) Duration {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (d *Duration) SetValid(value time.Duration) { d.Duration, d.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (d *Duration) SetValid(value time.Duration) {
+	d.Duration, d.Valid = value, true
+	d.NullIfDefault()
+}
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (d *Duration) Set(value time.Duration) { d.Duration, d.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (d *Duration) Reset() { d.Duration, d.Valid = 0, false }
@@ -74,7 +81,7 @@ func (d *Duration) Pointer() *time.Duration {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (d *Duration) Scan(value interface{}) (err error) {
+func (d *Duration) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		d.Duration, d.Valid = 0, false
@@ -104,7 +111,7 @@ func (d Duration) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (d *Duration) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -121,7 +128,7 @@ func (d *Duration) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 		d.Duration, err = time.ParseDuration(str)
-	case map[string]interface{}:
+	case map[string]any:
 		err = json.Unmarshal(data, &d.Duration)
 	case nil:
 		d.Valid = false

@@ -76,7 +76,7 @@ func TestIntReset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestIntNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isIntValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestIntNullIfDefault(t *testing.T) {
 }
 
 func TestIntMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewInt()
 	buf = v1.MustValue()
@@ -343,4 +343,19 @@ func TestIntMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isIntValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestIntSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewInt()
+	v1.SetValid(0)
+	isIntNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewInt()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

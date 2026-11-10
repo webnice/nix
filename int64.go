@@ -43,7 +43,11 @@ func NewInt64PointerValue(ptr *int64) Int64 {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (i *Int64) SetValid(value int64) { i.Int64, i.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (i *Int64) SetValid(value int64) { i.Int64, i.Valid = value, true; i.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (i *Int64) Set(value int64) { i.Int64, i.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (i *Int64) Reset() { i.Int64, i.Valid = 0, false }
@@ -73,7 +77,7 @@ func (i *Int64) Pointer() *int64 {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (i *Int64) Scan(value interface{}) (err error) {
+func (i *Int64) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		i.Int64, i.Valid = 0, false
@@ -101,7 +105,7 @@ func (i Int64) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (i *Int64) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -116,7 +120,7 @@ func (i *Int64) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 		i.Int64, err = strconv.ParseInt(str, 10, 64)
-	case map[string]interface{}:
+	case map[string]any:
 		err = json.Unmarshal(data, &i.Int64)
 	case nil:
 		i.Valid = false

@@ -40,7 +40,14 @@ func NewRawMessagePointerValue(ptr *json.RawMessage) RawMessage {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
 func (s *RawMessage) SetValid(value json.RawMessage) {
+	s.RawMessage, s.Valid = append(s.RawMessage[:0], value...), true
+	s.NullIfDefault()
+}
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (s *RawMessage) Set(value json.RawMessage) {
 	s.RawMessage, s.Valid = append(s.RawMessage[:0], value...), true
 }
 
@@ -74,7 +81,7 @@ func (s *RawMessage) Pointer() *json.RawMessage {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (s *RawMessage) Scan(value interface{}) (err error) {
+func (s *RawMessage) Scan(value any) (err error) {
 	if value == nil {
 		s.Reset()
 		return

@@ -66,7 +66,7 @@ func TestNewBoolPointerValue(t *testing.T) {
 
 func TestBoolSetValid(t *testing.T) {
 	tb := NewBool()
-	tb.SetValid(false)
+	tb.Set(false)
 	isFalseBool(t, tb, "SetValid(false)")
 
 	fb := NewBool()
@@ -78,7 +78,7 @@ func TestBoolReset(t *testing.T) {
 	ib := NewBool()
 	isNullBool(t, ib, "NewBool()")
 
-	ib.SetValid(false)
+	ib.Set(false)
 	isFalseBool(t, ib, "SetValid(false)")
 	if !ib.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
@@ -97,7 +97,7 @@ func TestBoolNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isTrueBool(t, v1, "NullIfDefault()")
 
-	v1.SetValid(false)
+	v1.Set(false)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -112,7 +112,7 @@ func TestBoolMustValue(t *testing.T) {
 		t.Error("MustValue()", errValidTrue)
 	}
 
-	mb.SetValid(false)
+	mb.Set(false)
 	if mb.MustValue() {
 		t.Error("MustValue()", errValidTrue)
 	}
@@ -378,4 +378,19 @@ func TestBoolMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isNullBool(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestBoolSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewBool()
+	v1.SetValid(false)
+	isNullBool(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewBool()
+	v2.Set(false)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

@@ -14,7 +14,7 @@ import (
 func isUint64Valid(t *testing.T, u Uint64, from string) {
 	const errUint64 = "ошибка %q, uint64: \"%d\" ≠ \"%d\""
 
-	dv := interface{}(u.Uint64)
+	dv := any(u.Uint64)
 	if dv.(uint64) != uint64(math.MaxUint64) {
 		t.Errorf(errUint64, from, dv, uint64(math.MaxUint64))
 	}
@@ -63,7 +63,7 @@ func TestUint64Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error(tplPropertyValid, errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -79,7 +79,7 @@ func TestUint64NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isUint64Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error(tplPropertyValid, errValidFalse)
 	}
@@ -88,7 +88,7 @@ func TestUint64NullIfDefault(t *testing.T) {
 }
 
 func TestUint64MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewUint64()
 	buf = v1.MustValue()
@@ -319,4 +319,19 @@ func TestUint64MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isUint64Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestUint64SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewUint64()
+	v1.SetValid(0)
+	isUint64Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewUint64()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

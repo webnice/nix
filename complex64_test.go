@@ -76,7 +76,7 @@ func TestComplex64Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestComplex64NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isComplex64Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestComplex64NullIfDefault(t *testing.T) {
 }
 
 func TestComplex64MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewComplex64()
 	buf = v1.MustValue()
@@ -343,4 +343,19 @@ func TestComplex64MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isComplex64Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestComplex64SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewComplex64()
+	v1.SetValid(0)
+	isComplex64Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewComplex64()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

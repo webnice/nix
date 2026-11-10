@@ -43,7 +43,11 @@ func NewComplex64PointerValue(ptr *complex64) Complex64 {
 }
 
 // SetValid Изменение значения и установка флага действительного значения.
-func (c *Complex64) SetValid(value complex64) { c.Complex64, c.Valid = value, true }
+// Если присвоенное значение является значением по умолчанию, флаг действительного значения сбрасывается.
+func (c *Complex64) SetValid(value complex64) { c.Complex64, c.Valid = value, true; c.NullIfDefault() }
+
+// Set Присваивает значение как есть и выставляет флаг действительного значения без проверки значения.
+func (c *Complex64) Set(value complex64) { c.Complex64, c.Valid = value, true }
 
 // Reset Сброс значения и установка флага не действительного значения.
 func (c *Complex64) Reset() { c.Complex64, c.Valid = 0, false }
@@ -73,7 +77,7 @@ func (c *Complex64) Pointer() *complex64 {
 }
 
 // Scan Реализация интерфейса Scanner.
-func (c *Complex64) Scan(value interface{}) (err error) {
+func (c *Complex64) Scan(value any) (err error) {
 	switch x := value.(type) {
 	case nil:
 		c.Complex64, c.Valid = 0, false
@@ -105,7 +109,7 @@ func (c Complex64) Value() (driver.Value, error) {
 
 // UnmarshalJSON Реализация интерфейса json.Unmarshaler.
 func (c *Complex64) UnmarshalJSON(data []byte) (err error) {
-	var v interface{}
+	var v any
 
 	if err = json.Unmarshal(data, &v); err != nil {
 		return
@@ -120,7 +124,7 @@ func (c *Complex64) UnmarshalJSON(data []byte) (err error) {
 		var n complex128
 		n, err = strconv.ParseComplex(str, 64)
 		c.Complex64 = complex64(n)
-	case map[string]interface{}:
+	case map[string]any:
 		err = json.Unmarshal(data, &c.Complex64)
 	case nil:
 		c.Valid = false

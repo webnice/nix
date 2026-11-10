@@ -79,7 +79,7 @@ func TestBigIntSetValid(t *testing.T) {
 	v1.SetValid(bi)
 	isBigIntValid(t, v1, "SetValid()")
 
-	v1.SetValid(nil)
+	v1.Set(nil)
 	if !v1.Valid || v1.BigInt.Sign() != 0 {
 		t.Error("SetValid(nil)", errWrong)
 	}
@@ -113,7 +113,7 @@ func TestBigIntNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isBigIntValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(big.NewInt(0))
+	v1.Set(big.NewInt(0))
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -430,4 +430,37 @@ func TestBigIntMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isBigIntValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestBigIntSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewBigInt()
+	v1.SetValid(big.NewInt(0))
+	isBigIntNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewBigInt()
+	v2.Set(big.NewInt(0))
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
+
+	// Для zero-value объекта значение выделяется автоматически.
+	var v3 BigInt
+	v3.Set(big.NewInt(5))
+	if !v3.Valid || v3.BigInt.Int64() != 5 {
+		t.Error("Set() для zero-value", errWrong)
+	}
+	var v4 BigInt
+	v4.SetValid(big.NewInt(5))
+	if !v4.Valid || v4.BigInt.Int64() != 5 {
+		t.Error("SetValid() для zero-value", errWrong)
+	}
+
+	var v5 BigInt
+	v5.SetValid(nil)
+	if v5.Valid || v5.BigInt.Sign() != 0 {
+		t.Error("SetValid(nil)", errWrong)
+	}
 }

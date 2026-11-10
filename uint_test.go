@@ -26,7 +26,7 @@ func isUintValid(t *testing.T, u Uint, from string) {
 		errValid = "является недействительным, ожидалось действительное"
 	)
 
-	dv := interface{}(u.Uint)
+	dv := any(u.Uint)
 	if dv.(uint) != uint(math.MaxUint64) {
 		t.Errorf(errUint, from, dv, uint(math.MaxUint64))
 	}
@@ -76,7 +76,7 @@ func TestUintReset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestUintNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isUintValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestUintNullIfDefault(t *testing.T) {
 }
 
 func TestUintMustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewUint()
 	buf = v1.MustValue()
@@ -342,4 +342,19 @@ func TestUintMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isUintValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestUintSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewUint()
+	v1.SetValid(0)
+	isUintNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewUint()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

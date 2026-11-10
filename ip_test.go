@@ -92,7 +92,7 @@ func TestIPNullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isIPValid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(nil)
+	v1.Set(nil)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -366,4 +366,19 @@ func TestIPMarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isIPValid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestIPSetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewIP()
+	v1.SetValid(nil)
+	isIPNull(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewIP()
+	v2.Set(nil)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }

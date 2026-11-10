@@ -26,7 +26,7 @@ func isUint8Valid(t *testing.T, u Uint8, from string) {
 		errValid = "является недействительным, ожидалось действительное"
 	)
 
-	dv := interface{}(u.Uint8)
+	dv := any(u.Uint8)
 	if dv.(uint8) != uint8(math.MaxUint8) {
 		t.Errorf(errUint8, from, dv, uint8(math.MaxUint8))
 	}
@@ -76,7 +76,7 @@ func TestUint8Reset(t *testing.T) {
 	if v1.Valid {
 		t.Error("Свойство Valid", errValidTrue)
 	}
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -92,7 +92,7 @@ func TestUint8NullIfDefault(t *testing.T) {
 	v1.NullIfDefault()
 	isUint8Valid(t, v1, "NullIfDefault()")
 
-	v1.SetValid(0)
+	v1.Set(0)
 	if !v1.Valid {
 		t.Error("Свойство Valid", errValidFalse)
 	}
@@ -101,7 +101,7 @@ func TestUint8NullIfDefault(t *testing.T) {
 }
 
 func TestUint8MustValue(t *testing.T) {
-	var buf interface{}
+	var buf any
 
 	v1 := NewUint8()
 	buf = v1.MustValue()
@@ -338,4 +338,19 @@ func TestUint8MarshalBinary(t *testing.T) {
 	err = gob.NewDecoder(buf).Decode(&item)
 	errorPanic(err)
 	isUint8Valid(t, item, "MarshalBinary() -> UnmarshalBinary()")
+}
+
+//goland:noinspection DuplicatedCode
+func TestUint8SetValidDefault(t *testing.T) {
+	// SetValid сбрасывает флаг Valid, если присвоено значение по умолчанию.
+	v1 := NewUint8()
+	v1.SetValid(0)
+	isUint8Null(t, v1, "SetValid(0)")
+
+	// Set присваивает значение как есть, без проверки на значение по умолчанию.
+	v2 := NewUint8()
+	v2.Set(0)
+	if !v2.Valid {
+		t.Error("Set()", errValidFalse)
+	}
 }
