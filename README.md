@@ -1,31 +1,24 @@
-# lin
+# nix
 
-[![GoDoc](https://godoc.org/gopkg.in/webnice/lin.v1/nl?status.svg)](https://godoc.org/gopkg.in/webnice/lin.v1/nl)
-[![Coverage Status](https://coveralls.io/repos/github/webnice/lin/badge.svg?branch=v1)](https://coveralls.io/github/webnice/lin?branch=v1)
-[![Build Status](https://travis-ci.org/webnice/lin.svg?branch=v1)](https://travis-ci.org/webnice/lin)
-[![CircleCI](https://circleci.com/gh/webnice/lin/tree/v1.svg?style=svg)](https://circleci.com/gh/webnice/lin/tree/v1)
+[![GoDoc](https://pkg.go.dev/badge/github.com/webnice/nix.svg)](https://pkg.go.dev/github.com/webnice/nix)
+[![Coverage Status](https://coveralls.io/repos/github/webnice/nix/badge.svg)](https://coveralls.io/github/webnice/nix)
 
-Golang library
+Библиотека golang
 
-Handling of nullable values
+Обработка значений, допускающих nil
 
-Project has been renamed from nul to lin because of a bug to a golang vgo module.
-It's not possible to get (go get) any module in which the word "nul" is in the path, folder name or name of any file.
-This error wasn't found before the version of golang 1.11.
-:-(
-
-#### Dependencies
+#### Зависимости
 
 	NONE
 
-#### Install
+#### Установка
 ```bash
-go get gopkg.in/webnice/lin.v1/nl
+go get -u github.com/webnice/nix
 ```
 
-#### Import
+#### Импорт
 ```go
 import (
-	nul "gopkg.in/webnice/lin.v1/nl"
+	"github.com/webnice/nix"
 )
 ```

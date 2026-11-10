@@ -1,2 +1,1 @@
-gopkg.in/webnice/lin.v1/nl
-gopkg.in/webnice/lin.v1/wrapper
+github.com/webnice/nix/...

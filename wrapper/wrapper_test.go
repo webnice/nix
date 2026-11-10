@@ -1,10 +1,6 @@
-package wrapper // import "gopkg.in/webnice/lin.v1/wrapper"
+package wrapper
 
-//import "gopkg.in/webnice/debug.v1"
-//import "gopkg.in/webnice/log.v2"
-import (
-	"testing"
-)
+import "testing"
 
 func TestExistsWrapers(t *testing.T) {
 	_ = &BoolWrapper{}

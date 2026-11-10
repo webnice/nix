@@ -1,0 +1,211 @@
+package nix
+
+import (
+	"bytes"
+	"database/sql/driver"
+	"encoding/gob"
+	"encoding/json"
+	"fmt"
+	"reflect"
+
+	"github.com/webnice/nix/wrapper"
+)
+
+// String Объект string, допускающий значение nil.
+type String struct {
+	String string // Значение объекта.
+	Valid  bool   // Valid равен true если значение не nil.
+}
+
+// NewString Создание нового объекта String.
+func NewString() String {
+	return String{
+		String: ``,
+		Valid:  false,
+	}
+}
+
+// NewStringValue Создание нового действительного объекта String из значения.
+func NewStringValue(value string) String {
+	return String{
+		String: value,
+		Valid:  true,
+	}
+}
+
+// NewStringPointerValue Создание нового действительного объекта String из ссылки на значение.
+func NewStringPointerValue(ptr *string) String {
+	if ptr == nil {
+		return NewString()
+	}
+	return NewStringValue(*ptr)
+}
+
+// SetValid Изменение значения и установка флага действительного значения.
+func (s *String) SetValid(value string) { s.String, s.Valid = value, true }
+
+// Reset Сброс значения и установка флага не действительного значения.
+func (s *String) Reset() {
+	s.String, s.Valid = s.String[:0], false
+}
+
+// NullIfDefault Выполняет сброс значения до nil, если значение переменной является значением по умолчанию.
+func (s *String) NullIfDefault() String {
+	const emptyString = ""
+	if s.String == emptyString {
+		s.Reset()
+	}
+	return *s
+}
+
+// MustValue Возвращает значение в любом случае.
+func (s *String) MustValue() string {
+	const emptyString = ""
+	if !s.Valid {
+		return emptyString
+	}
+	return s.String
+}
+
+// Pointer Возвращает ссылку на значение.
+func (s *String) Pointer() *string {
+	if !s.Valid {
+		return nil
+	}
+	return &s.String
+}
+
+// Scan Реализация интерфейса Scanner.
+func (s *String) Scan(value interface{}) (err error) {
+	if value == nil {
+		s.Reset()
+		return
+	}
+	s.String = asString(value)
+	s.Valid = s.String != ""
+
+	return
+}
+
+// Value Реализация интерфейса driver.Valuer.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (s String) Value() (driver.Value, error) {
+	if !s.Valid {
+		return nil, nil
+	}
+	return s.String, nil
+}
+
+// UnmarshalJSON Реализация интерфейса json.Unmarshaler.
+func (s *String) UnmarshalJSON(data []byte) (err error) {
+	var v interface{}
+
+	if err = json.Unmarshal(data, &v); err != nil {
+		return
+	}
+	switch x := v.(type) {
+	case nil:
+		s.Valid = false
+		return
+	case string:
+		s.String = x
+	case map[string]interface{}:
+		err = json.Unmarshal(data, &s.String)
+	default:
+		err = fmt.Errorf("can't unmarshal %q into go value of type nix.String", reflect.TypeOf(v).Name())
+	}
+	s.Valid = err == nil
+
+	return
+}
+
+// MarshalJSON Реализация интерфейса json.Marshaler.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (s String) MarshalJSON() (data []byte, err error) {
+	const nullString = "null"
+
+	if !s.Valid {
+		data = []byte(nullString)
+		return
+	}
+	data, err = json.Marshal(s.String)
+
+	return
+}
+
+// UnmarshalText Реализация интерфейса encoding.TextUnmarshaler.
+func (s *String) UnmarshalText(text []byte) (err error) {
+	const (
+		emptyString = ""
+		nullString  = "null"
+	)
+	var str string
+
+	switch str = string(text); str {
+	case nullString:
+		s.String, s.Valid = emptyString, false
+		return
+	case emptyString:
+		s.String, s.Valid = emptyString, true
+		return
+	default:
+		s.String = str
+		s.Valid = s.String != emptyString
+	}
+
+	return
+}
+
+// MarshalText Реализация интерфейса encoding.TextMarshaler.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (s String) MarshalText() (text []byte, err error) {
+	const nullString = "null"
+
+	if !s.Valid {
+		text = []byte(nullString)
+		return
+	}
+	text = []byte(s.String)
+
+	return
+}
+
+// UnmarshalBinary Реализация интерфейса encoding.BinaryUnmarshaler.
+func (s *String) UnmarshalBinary(data []byte) (err error) {
+	var (
+		reader *bytes.Reader
+		dec    *gob.Decoder
+		item   *wrapper.StringWrapper
+	)
+
+	reader = bytes.NewReader(data)
+	dec = gob.NewDecoder(reader)
+	item = new(wrapper.StringWrapper)
+	if err = dec.Decode(item); err == nil {
+		s.String, s.Valid = item.Value, item.Valid
+	}
+
+	return
+}
+
+// MarshalBinary Реализация интерфейса encoding.BinaryMarshaler.
+//
+//goland:noinspection GoMixedReceiverTypes
+func (s String) MarshalBinary() (data []byte, err error) {
+	var (
+		buf  *bytes.Buffer
+		enc  *gob.Encoder
+		item *wrapper.StringWrapper
+	)
+
+	buf = &bytes.Buffer{}
+	enc = gob.NewEncoder(buf)
+	item = &wrapper.StringWrapper{Value: s.String, Valid: s.Valid}
+	err = enc.Encode(item)
+	data = buf.Bytes()
+
+	return
+}
