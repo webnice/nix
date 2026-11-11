@@ -105,9 +105,9 @@ bool, []byte, string, time.Time); чтение NULL (nil) даёт нулево�
 методами Scan, UnmarshalJSON и UnmarshalText. Запись в базу данных выполняется
 методом Value как int64 наносекунд.
 
-## Тип StringSlice и формат set/enum базы данных
+## Тип StringSlice и формат set базы данных
 
-Тип StringSlice читается из колонок типа set и enum баз данных MySQL, которые
+Тип StringSlice читается из колонок типа set баз данных MySQL, которые
 драйверы передают строкой с перечислением элементов через запятую:
 
   - запись в базу данных методом Value выполняется строкой "a,b,c";
