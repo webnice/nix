@@ -6,8 +6,10 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/webnice/nix/v2/wrapper"
@@ -92,7 +94,7 @@ func (d *Duration) Scan(value any) (err error) {
 		d.Duration = time.Duration(x)
 	default:
 		buf := asString(x)
-		d.Duration, err = time.ParseDuration(buf)
+		d.Duration, err = parseDuration(buf)
 	}
 	d.Valid = err == nil
 
@@ -127,7 +129,7 @@ func (d *Duration) UnmarshalJSON(data []byte) (err error) {
 			d.Valid = false
 			return
 		}
-		d.Duration, err = time.ParseDuration(str)
+		d.Duration, err = parseDuration(str)
 	case map[string]any:
 		err = json.Unmarshal(data, &d.Duration)
 	case nil:
@@ -172,7 +174,7 @@ func (d *Duration) UnmarshalText(text []byte) (err error) {
 		d.Duration, d.Valid = 0, true
 		return
 	default:
-		d.Duration, err = time.ParseDuration(str)
+		d.Duration, err = parseDuration(str)
 	}
 	d.Valid = err == nil
 
@@ -229,4 +231,89 @@ func (d Duration) MarshalBinary() (data []byte, err error) {
 	data = buf.Bytes()
 
 	return
+}
+
+// parseDuration Разбор строкового представления длительности.
+// Допускает формат time.ParseDuration ("1h30m0s", "300ms") и строковое представление типа time
+// баз данных MySQL и PostgreSQL: "[-][Ч]ЧЧ:ММ:СС[.дробная часть]", например "838:59:59",
+// "-01:30:00.123456". Строки, не соответствующие формату времени базы данных,
+// разбираются как time.ParseDuration.
+func parseDuration(value string) (time.Duration, error) {
+	if duration, ok := parseDatabaseTime(value); ok {
+		return duration, nil
+	}
+
+	return time.ParseDuration(value)
+}
+
+// parseDatabaseTime Разбор строки формата типа time баз данных MySQL (TIME, диапазон
+// -838:59:59..838:59:59) и PostgreSQL (time, 00:00:00..24:00:00): "[-][Ч]ЧЧ:ММ:СС[.дробная часть]".
+// Дробная часть допускает от 1 до 9 цифр и масштабируется до наносекунд.
+// Второе возвращаемое значение равно false если строка не соответствует формату времени базы данных.
+func parseDatabaseTime(value string) (duration time.Duration, ok bool) {
+	var (
+		negative          bool
+		n                 int
+		err               error
+		hours, minutes    uint64
+		seconds, fraction uint64
+		rest, sec, frac   string
+	)
+
+	rest = value
+	if strings.HasPrefix(rest, "-") {
+		negative, rest = true, rest[1:]
+	}
+	// Часы: одна и более цифр до первого двоеточия.
+	if n = strings.IndexByte(rest, ':'); n <= 0 {
+		return 0, false
+	}
+	if hours, err = strconv.ParseUint(rest[:n], 10, 64); err != nil {
+		return 0, false
+	}
+	rest = rest[n+1:]
+	// Минуты: ровно две цифры до второго двоеточия.
+	if n = strings.IndexByte(rest, ':'); n != 2 {
+		return 0, false
+	}
+	if minutes, err = strconv.ParseUint(rest[:n], 10, 64); err != nil || minutes > 59 {
+		return 0, false
+	}
+	rest = rest[n+1:]
+	// Секунды: ровно две цифры, в конце строки или перед точкой дробной части.
+	sec, frac = rest, ""
+	if n = strings.IndexByte(rest, '.'); n >= 0 {
+		if sec, frac = rest[:n], rest[n+1:]; frac == "" {
+			return 0, false
+		}
+	}
+	if len(sec) != 2 {
+		return 0, false
+	}
+	if seconds, err = strconv.ParseUint(sec, 10, 64); err != nil || seconds > 59 {
+		return 0, false
+	}
+	// Дробная часть: от 1 до 9 цифр, масштабируется до наносекунд.
+	if frac != "" {
+		if len(frac) > 9 {
+			return 0, false
+		}
+		if fraction, err = strconv.ParseUint(frac, 10, 64); err != nil {
+			return 0, false
+		}
+		for i := len(frac); i < 9; i++ {
+			fraction *= 10
+		}
+	}
+	// Защита от переполнения: максимум часов, умещающийся в time.Duration (~292 года).
+	if hours > uint64(math.MaxInt64/int64(time.Hour)) {
+		return 0, false
+	}
+	duration = time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute +
+		time.Duration(seconds)*time.Second + time.Duration(fraction)
+	if negative {
+		duration = -duration
+	}
+
+	return duration, true
 }

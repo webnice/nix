@@ -165,6 +165,87 @@ func TestDurationScan(t *testing.T) {
 	}
 }
 
+// TestDurationScanDatabaseTime Строковое представление типа time баз данных MySQL и PostgreSQL:
+// "[-][Ч]ЧЧ:ММ:СС[.дробная часть]".
+func TestDurationScanDatabaseTime(t *testing.T) {
+	const errDurationValue = "ошибка %q, time.Duration: \"%d\" ≠ \"%d\""
+	var err error
+
+	// MySQL TIME, максимальное значение диапазона -838:59:59..838:59:59.
+	v1 := NewDuration()
+	errorPanic(v1.Scan("838:59:59"))
+	if int64(v1.Duration) != int64(838*time.Hour+59*time.Minute+59*time.Second) {
+		t.Errorf(errDurationValue, "Scan()", int64(v1.Duration), int64(838*time.Hour+59*time.Minute+59*time.Second))
+	}
+	if !v1.Valid {
+		t.Error("Scan()", errValidFalse)
+	}
+
+	// MySQL TIME, отрицательное значение.
+	v2 := NewDuration()
+	errorPanic(v2.Scan("-838:59:59"))
+	if int64(v2.Duration) != -int64(838*time.Hour+59*time.Minute+59*time.Second) {
+		t.Errorf(errDurationValue, "Scan()", int64(v2.Duration), -int64(838*time.Hour+59*time.Minute+59*time.Second))
+	}
+	if !v2.Valid {
+		t.Error("Scan()", errValidFalse)
+	}
+
+	// PostgreSQL time, значение суток.
+	v3 := NewDuration()
+	errorPanic(v3.Scan("24:00:00"))
+	if int64(v3.Duration) != int64(24*time.Hour) {
+		t.Errorf(errDurationValue, "Scan()", int64(v3.Duration), int64(24*time.Hour))
+	}
+	if !v3.Valid {
+		t.Error("Scan()", errValidFalse)
+	}
+
+	// Дробная часть в микросекундах, как у MySQL TIME(6) и PostgreSQL time.
+	v4 := NewDuration()
+	errorPanic(v4.Scan("01:02:03.123456"))
+	if int64(v4.Duration) != int64(time.Hour+2*time.Minute+3*time.Second+123456*time.Microsecond) {
+		t.Errorf(errDurationValue, "Scan()", int64(v4.Duration), int64(time.Hour+2*time.Minute+3*time.Second+123456*time.Microsecond))
+	}
+	if !v4.Valid {
+		t.Error("Scan()", errValidFalse)
+	}
+
+	// Дробная часть в наносекундах.
+	v5 := NewDuration()
+	errorPanic(v5.Scan("00:00:00.000000001"))
+	if int64(v5.Duration) != int64(time.Nanosecond) {
+		t.Errorf(errDurationValue, "Scan()", int64(v5.Duration), int64(time.Nanosecond))
+	}
+	if !v5.Valid {
+		t.Error("Scan()", errValidFalse)
+	}
+
+	// Некорректные строки формата времени базы данных.
+	for _, item := range []string{
+		":00:00",                    // отсутствуют часы
+		"aa:00:00",                  // часы не число
+		"1:2:3",                     // минуты из одной цифры
+		"00:aa:00",                  // минуты не число
+		"00:60:00",                  // минуты больше 59
+		"00:00:0",                   // секунды из одной цифры
+		"00:00:aa",                  // секунды не число
+		"00:00:60",                  // секунды больше 59
+		"00:00:00.",                 // пустая дробная часть
+		"00:00:00.aaaa",             // дробная часть не число
+		"00:00:00.1234567890",       // дробная часть длиннее наносекунд
+		"9999999999999999999:00:00", // переполнение часов
+	} {
+		itemValue := NewDuration()
+		if err = itemValue.Scan(item); err == nil {
+			t.Errorf("Scan(%q) ожидалась ошибка, ошибка не получена", item)
+		}
+		if itemValue.Valid {
+			t.Errorf("Scan(%q) является действительным, ожидалось недействительное", item)
+		}
+	}
+}
+
 func TestDurationValue(t *testing.T) {
 	var err error
 	var dv driver.Value
@@ -241,6 +322,12 @@ func TestDurationUnmarshalJSON(t *testing.T) {
 		panic(errErrorNotNil)
 	}
 	isDurationNull(t, v8, "UnmarshalJSON()")
+
+	// Формат типа time базы данных: "ЧЧ:ММ:СС".
+	v9 := NewDuration()
+	err = json.Unmarshal([]byte(`"1:30:00"`), &v9)
+	errorPanic(err)
+	isDurationValid(t, v9, "UnmarshalJSON()")
 }
 
 func TestDurationMarshalJSON(t *testing.T) {
@@ -275,6 +362,12 @@ func TestDurationUnmarshalText(t *testing.T) {
 	err = v3.UnmarshalText(boolNullJSON)
 	errorPanic(err)
 	isDurationNull(t, v3, "UnmarshalText()")
+
+	// Формат типа time базы данных: "ЧЧ:ММ:СС".
+	v4 := NewDuration()
+	err = v4.UnmarshalText([]byte("1:30:00"))
+	errorPanic(err)
+	isDurationValid(t, v4, "UnmarshalText()")
 }
 
 func TestDurationMarshalText(t *testing.T) {
