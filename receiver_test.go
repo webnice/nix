@@ -53,6 +53,7 @@ var (
 	_ driver.Valuer = Float64{}
 	_ driver.Valuer = Int64{}
 	_ driver.Valuer = String{}
+	_ driver.Valuer = StringSlice{}
 	_ driver.Valuer = Time{}
 	_ driver.Valuer = Uint64{}
 	_ driver.Valuer = Int{}
@@ -79,6 +80,7 @@ var (
 	_ json.Marshaler = Float64{}
 	_ json.Marshaler = Int64{}
 	_ json.Marshaler = String{}
+	_ json.Marshaler = StringSlice{}
 	_ json.Marshaler = Time{}
 	_ json.Marshaler = Uint64{}
 	_ json.Marshaler = Int{}
@@ -105,6 +107,7 @@ var (
 	_ encoding.TextMarshaler = Float64{}
 	_ encoding.TextMarshaler = Int64{}
 	_ encoding.TextMarshaler = String{}
+	_ encoding.TextMarshaler = StringSlice{}
 	_ encoding.TextMarshaler = Time{}
 	_ encoding.TextMarshaler = Uint64{}
 	_ encoding.TextMarshaler = Int{}
@@ -131,6 +134,7 @@ var (
 	_ encoding.BinaryMarshaler = Float64{}
 	_ encoding.BinaryMarshaler = Int64{}
 	_ encoding.BinaryMarshaler = String{}
+	_ encoding.BinaryMarshaler = StringSlice{}
 	_ encoding.BinaryMarshaler = Time{}
 	_ encoding.BinaryMarshaler = Uint64{}
 	_ encoding.BinaryMarshaler = Int{}
@@ -210,6 +214,7 @@ func TestValueReceiverDatabaseSQL(t *testing.T) {
 		Float64    Float64       `db:"float64"  gorm:"column:float64"`
 		Int64      Int64         `db:"int64"    gorm:"column:int64"`
 		String     String        `db:"string"   gorm:"column:string"`
+		StringSl   StringSlice   `db:"stringsl" gorm:"column:stringsl"`
 		Time       Time          `db:"time"     gorm:"column:time"`
 		Uint64     Uint64        `db:"uint64"     gorm:"column:uint64"`
 		Duration   Duration      `db:"duration"   gorm:"column:duration"`
@@ -228,6 +233,7 @@ func TestValueReceiverDatabaseSQL(t *testing.T) {
 		Float64:    NewFloat64Value(1.5),
 		Int64:      NewInt64Value(-42),
 		String:     NewStringValue("test-string"),
+		StringSl:   NewStringSliceValue([]string{"test-one", "test-two"}),
 		Time:       NewTimeValue(timeOkValidValue),
 		Uint64:     NewUint64Value(math.MaxUint64),
 		Duration:   NewDurationValue(90 * time.Minute),
@@ -241,8 +247,8 @@ func TestValueReceiverDatabaseSQL(t *testing.T) {
 	}
 
 	if _, err = db.Exec(
-		"INSERT INTO message VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-		msg.Bool, msg.Bytes, msg.Float64, msg.Int64, msg.String, msg.Time, msg.Uint64,
+		"INSERT INTO message VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		msg.Bool, msg.Bytes, msg.Float64, msg.Int64, msg.String, msg.StringSl, msg.Time, msg.Uint64,
 		msg.Duration, msg.RawMessage, msg.IP, msg.BigInt, msg.UUID, msg.Complex, msg.Int, msg.Nullable,
 	); err != nil {
 		t.Fatalf("Передача значений полей структуры в database/sql: %v", err)
@@ -255,6 +261,7 @@ func TestValueReceiverDatabaseSQL(t *testing.T) {
 		float64(1.5),
 		int64(-42),
 		"test-string",
+		"test-one,test-two",
 		timeOkValidValue,
 		[]byte("18446744073709551615"),
 		int64(90 * time.Minute),
@@ -287,6 +294,7 @@ func TestValueReceiverJSON(t *testing.T) {
 		{"Float64", NewFloat64Value(math.MaxFloat64), float64JSON},
 		{"Int64", NewInt64Value(math.MaxInt64), int64JSON},
 		{"String", NewStringValue(stringTestBody), stringJSON},
+		{"StringSlice", NewStringSliceValue([]string{"one", "two"}), []byte(`["one","two"]`)},
 		{"Time", NewTimeValue(timeOkValidValue), timeStringValueJSON},
 		{"Uint64", NewUint64Value(math.MaxUint64), uint64JSON},
 		{"Int", NewIntValue(-42), []byte(`-42`)},

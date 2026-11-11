@@ -17,7 +17,7 @@ func ptrOf[T any](v T) *T { return &v }
 func TestValueInterface(t *testing.T) {
 	values := []Interface{
 		&Bool{}, ptrOf(NewBytes()), &Complex128{}, &Complex64{}, &Duration{}, &Float32{}, &Float64{},
-		&Int{}, &Int16{}, &Int32{}, &Int64{}, &Int8{}, &IP{}, &RawMessage{}, &String{},
+		&Int{}, &Int16{}, &Int32{}, &Int64{}, &Int8{}, &IP{}, &RawMessage{}, &String{}, &StringSlice{},
 		&Time{}, &Uint{}, &Uint16{}, &Uint32{}, &Uint64{}, &Uint8{}, &Uintptr{}, &UUID{},
 		ptrOf(NewBigInt()), &Nullable[int]{},
 	}
@@ -111,6 +111,7 @@ func TestValuerInterface(t *testing.T) {
 		valuerTest[json.RawMessage](t, &RawMessage{}, json.RawMessage(`{"key":"value"}`))
 	})
 	t.Run("String", func(t *testing.T) { valuerTest[string](t, &String{}, "test") })
+	t.Run("StringSlice", func(t *testing.T) { valuerTest[[]string](t, &StringSlice{}, []string{"one", "two"}) })
 	t.Run("Time", func(t *testing.T) { valuerTest[time.Time](t, &Time{}, timeOkValidValue) })
 	t.Run("Uint", func(t *testing.T) { valuerTest[uint](t, &Uint{}, 42) })
 	t.Run("Uint8", func(t *testing.T) { valuerTest[uint8](t, &Uint8{}, 255) })
@@ -180,6 +181,9 @@ func TestNullifierInterface(t *testing.T) {
 		nullifierTest[json.RawMessage, RawMessage](t, &RawMessage{}, json.RawMessage(`{"key":"value"}`), nil)
 	})
 	t.Run("String", func(t *testing.T) { nullifierTest[string, String](t, &String{}, "test", "") })
+	t.Run("StringSlice", func(t *testing.T) {
+		nullifierTest[[]string, StringSlice](t, &StringSlice{}, []string{"test"}, []string{})
+	})
 	t.Run("Time", func(t *testing.T) { nullifierTest[time.Time, Time](t, &Time{}, timeOkValidValue, time.Time{}) })
 	t.Run("Uint", func(t *testing.T) { nullifierTest[uint, Uint](t, &Uint{}, 42, 0) })
 	t.Run("Uint8", func(t *testing.T) { nullifierTest[uint8, Uint8](t, &Uint8{}, 255, 0) })

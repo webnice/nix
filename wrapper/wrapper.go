@@ -24,6 +24,7 @@ func init() {
 	gob.Register(Int8Wrapper{})
 	gob.Register(IntWrapper{})
 	gob.Register(RawMessageWrapper{})
+	gob.Register(StringSliceWrapper{})
 	gob.Register(StringWrapper{})
 	gob.Register(TimeWrapper{})
 	gob.Register(Uint16Wrapper{})
@@ -56,6 +57,12 @@ type Float64Wrapper struct {
 // Int64Wrapper Обёртка для Int64.
 type Int64Wrapper struct {
 	Value int64
+	Valid bool
+}
+
+// StringSliceWrapper Обёртка для StringSlice.
+type StringSliceWrapper struct {
+	Value []string
 	Valid bool
 }
 
