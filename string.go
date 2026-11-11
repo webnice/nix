@@ -117,7 +117,7 @@ func (s *String) UnmarshalJSON(data []byte) (err error) {
 	case map[string]any:
 		err = json.Unmarshal(data, &s.String)
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.String", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errStringUnmarshal, reflect.TypeOf(v).Name())
 	}
 	s.Valid = err == nil
 

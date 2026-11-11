@@ -134,7 +134,7 @@ func (d *Duration) UnmarshalJSON(data []byte) (err error) {
 		d.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Duration", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errDurationUnmarshal, reflect.TypeOf(v).Name())
 	}
 	d.Valid = err == nil
 

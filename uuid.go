@@ -13,9 +13,6 @@ import (
 	"github.com/webnice/nix/wrapper"
 )
 
-// uuidLength Длина строкового представления UUID с разделителями.
-const uuidLength = 36
-
 // UUID Объект UUID (16 байт), допускающий значение nil.
 // Реализация без привязки к внешним библиотекам.
 type UUID struct {
@@ -94,7 +91,7 @@ func (u *UUID) Scan(value any) (err error) {
 	case []byte:
 		u.UUID, err = uuidParse(string(x))
 	default:
-		err = fmt.Errorf("can't scan type %T into nix.UUID: %v", value, value)
+		err = fmt.Errorf(errUUIDScan, value, value)
 	}
 	u.Valid = err == nil
 
@@ -131,9 +128,7 @@ func (u *UUID) UnmarshalJSON(data []byte) (err error) {
 		_, uuOK := x["UUID"].(string)
 		valid, validOK := x["Valid"].(bool)
 		if !uuOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.UUID requires key "UUID" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["UUID"], x["Valid"])
+			return fmt.Errorf(errUUIDObject, x["UUID"], x["Valid"])
 		}
 		rex = regexp.MustCompile(`"UUID"\s*:\s*"([^"]+)"`)
 		if arr := rex.FindStringSubmatch(string(data)); len(arr) == 2 {
@@ -145,7 +140,7 @@ func (u *UUID) UnmarshalJSON(data []byte) (err error) {
 		u.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.UUID", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errUUIDUnmarshal, reflect.TypeOf(v).Name())
 	}
 	u.Valid = err == nil
 
@@ -253,17 +248,17 @@ func uuidParse(s string) (u [16]byte, err error) {
 	switch len(s) {
 	case uuidLength:
 		if s[8] != hyphenByte || s[13] != hyphenByte || s[18] != hyphenByte || s[23] != hyphenByte {
-			return u, fmt.Errorf("неверный формат UUID: %q", s)
+			return u, fmt.Errorf(errUUIDFormat, s)
 		}
 		s = s[:8] + s[9:13] + s[14:18] + s[19:23] + s[24:]
 	case hexLength:
 	default:
-		return u, fmt.Errorf("неверный формат UUID: %q", s)
+		return u, fmt.Errorf(errUUIDFormat, s)
 	}
 	for i := 0; i < hexLength; i += 2 {
 		var n uint64
 		if n, err = strconv.ParseUint(s[i:i+2], 16, 8); err != nil {
-			return [16]byte{}, fmt.Errorf("неверный формат UUID: %q", s)
+			return [16]byte{}, fmt.Errorf(errUUIDFormat, s)
 		}
 		u[i/2] = byte(n)
 	}

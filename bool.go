@@ -113,9 +113,7 @@ func (b *Bool) UnmarshalJSON(data []byte) (err error) {
 		value, okValue := x["Bool"].(bool)
 		valid, okValid := x["Valid"].(bool)
 		if !okValue || !okValid {
-			return fmt.Errorf("unmarshalling object into Go value of type nix.Bool requires key "+
-				`"Bool" to be of type string and key "Valid" to be of type bool; `+
-				"found %T and %T, respectively", x["Bool"], x["Valid"])
+			return fmt.Errorf(errBoolObject, x["Bool"], x["Valid"])
 		}
 		b.Bool = value
 		b.Valid = valid

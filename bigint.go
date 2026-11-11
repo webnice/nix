@@ -101,11 +101,11 @@ func (b *BigInt) MustValue() *big.Int {
 }
 
 // Pointer Возвращает ссылку на значение.
-func (b *BigInt) Pointer() *big.Int {
+func (b *BigInt) Pointer() **big.Int {
 	if !b.Valid {
 		return nil
 	}
-	return b.BigInt
+	return &b.BigInt
 }
 
 // ensureBigInt Гарантирует наличие выделенного значения для работы с zero-value объектом.
@@ -126,13 +126,13 @@ func (b *BigInt) Scan(value any) (err error) {
 		b.Set(x)
 	case string:
 		if _, ok := b.BigInt.SetString(x, 10); !ok {
-			err = fmt.Errorf("can't parse %q as big.Int", x)
+			err = fmt.Errorf(errBigIntParse, x)
 		}
 		b.Valid = err == nil
 		return
 	case []byte:
 		if _, ok := b.BigInt.SetString(string(x), 10); !ok {
-			err = fmt.Errorf("can't parse %q as big.Int", string(x))
+			err = fmt.Errorf(errBigIntParse, string(x))
 		}
 		b.Valid = err == nil
 		return
@@ -141,7 +141,7 @@ func (b *BigInt) Scan(value any) (err error) {
 		b.Valid = true
 		return
 	default:
-		err = fmt.Errorf("can't scan type %T into nix.BigInt: %v", value, value)
+		err = fmt.Errorf(errBigIntScan, value, value)
 	}
 	b.Valid = err == nil
 
@@ -177,20 +177,18 @@ func (b *BigInt) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 		if _, ok := b.BigInt.SetString(str, 10); !ok {
-			err = fmt.Errorf("can't parse %q as big.Int", str)
+			err = fmt.Errorf(errBigIntParse, str)
 		}
 	case float64:
 		if _, ok := b.BigInt.SetString(string(data), 10); !ok {
-			err = fmt.Errorf("can't parse %q as big.Int", string(data))
+			err = fmt.Errorf(errBigIntParse, string(data))
 		}
 	case map[string]any:
 		var rex *regexp.Regexp
 		_, biOK := x["BigInt"].(string)
 		valid, validOK := x["Valid"].(bool)
 		if !biOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.BigInt requires key "BigInt" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["BigInt"], x["Valid"])
+			return fmt.Errorf(errBigIntObject, x["BigInt"], x["Valid"])
 		}
 		rex = regexp.MustCompile(`"BigInt"\s*:\s*"([^"]+)"`)
 		if arr := rex.FindStringSubmatch(string(data)); len(arr) == 2 {
@@ -199,7 +197,7 @@ func (b *BigInt) UnmarshalJSON(data []byte) (err error) {
 		}
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %v into Go value of type nix.BigInt", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errBigIntUnmarshal, reflect.TypeOf(v).Name())
 	}
 	b.Valid = err == nil
 
@@ -240,7 +238,7 @@ func (b *BigInt) UnmarshalText(text []byte) (err error) {
 		return
 	default:
 		if _, ok := b.BigInt.SetString(str, 10); !ok {
-			err = fmt.Errorf("can't parse %q as big.Int", str)
+			err = fmt.Errorf(errBigIntParse, str)
 		}
 	}
 	b.Valid = err == nil

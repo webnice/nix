@@ -131,7 +131,7 @@ func (c *Complex128) UnmarshalJSON(data []byte) (err error) {
 		c.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Complex128", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errComplex128Unmarshal, reflect.TypeOf(v).Name())
 	}
 	c.Valid = err == nil
 

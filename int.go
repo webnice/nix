@@ -134,7 +134,7 @@ func (i *Int) UnmarshalJSON(data []byte) (err error) {
 		i.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Int", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errIntUnmarshal, reflect.TypeOf(v).Name())
 	}
 	i.Valid = err == nil
 

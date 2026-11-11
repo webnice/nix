@@ -152,11 +152,11 @@ func TestBigIntPointer(t *testing.T) {
 		t.Error("Pointer()", errNil)
 	}
 	if //goland:noinspection GoMaybeNil
-	pb.String() != bigIntTestString {
+	(*pb).String() != bigIntTestString {
 		t.Error("Pointer() value", errWrong)
 	}
 
-	v3 := NewBigIntPointerValue(&pb)
+	v3 := NewBigIntPointerValue(pb)
 	isBigIntValid(t, v3, "NewBigIntPointerValue(max)")
 	if v3.Pointer() == nil {
 		t.Error("Pointer()", errNil)

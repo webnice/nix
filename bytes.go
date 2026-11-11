@@ -99,7 +99,7 @@ func (bt *Bytes) Scan(value any) (err error) {
 	case string:
 		bt.Set([]byte(value.(string)))
 	default:
-		err = fmt.Errorf("can't scan type %T into nix.Bytes: %v", x, value)
+		err = fmt.Errorf(errBytesScan, x, value)
 	}
 	bt.Valid = err == nil
 
@@ -134,9 +134,7 @@ func (bt *Bytes) UnmarshalJSON(data []byte) (err error) {
 		value, okValue := x["Bytes"].(string)
 		valid, okValid := x["Valid"].(bool)
 		if !okValue || !okValid {
-			return fmt.Errorf("unmarshalling object into Go value of type nix.Bytes requires key "+
-				`"Bytes" to be of type string and key "Valid" to be of type string; `+
-				"found %T and %T, respectively", x["Bytes"], x["Valid"])
+			return fmt.Errorf(errBytesObject, x["Bytes"], x["Valid"])
 		}
 		if buf, err = base64.StdEncoding.DecodeString(value); err == nil {
 			bt.Set(buf)

@@ -133,9 +133,7 @@ func (u *Uint16) UnmarshalJSON(data []byte) (err error) {
 		_, uiOK := x["Uint16"].(float64)
 		valid, validOK := x["Valid"].(bool)
 		if !uiOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.Uint16 requires key "Uint16" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["Uint16"], x["Valid"])
+			return fmt.Errorf(errUint16Object, x["Uint16"], x["Valid"])
 		}
 		rex = regexp.MustCompile(`"Uint16"\s*:\s*([0-9]+)`)
 		if arr := rex.FindStringSubmatch(string(data)); len(arr) == 2 {
@@ -144,7 +142,7 @@ func (u *Uint16) UnmarshalJSON(data []byte) (err error) {
 		}
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %v into Go value of type nix.Uint16", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errUint16Unmarshal, reflect.TypeOf(v).Name())
 	}
 	u.Valid = err == nil
 

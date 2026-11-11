@@ -123,15 +123,13 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 		ti, tiOK := x["Time"].(string)
 		valid, validOK := x["Valid"].(bool)
 		if !tiOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.Time requires key "Time" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["Time"], x["Valid"])
+			return fmt.Errorf(errTimeObject, x["Time"], x["Valid"])
 		}
 		err = t.Time.UnmarshalText([]byte(ti))
 		t.Valid = valid
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %s into Go value of type nix.Time", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errTimeUnmarshal, reflect.TypeOf(v).Name())
 	}
 	t.Valid = err == nil
 

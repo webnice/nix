@@ -132,7 +132,7 @@ func (i *Int8) UnmarshalJSON(data []byte) (err error) {
 		i.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Int8", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errInt8Unmarshal, reflect.TypeOf(v).Name())
 	}
 	i.Valid = err == nil
 

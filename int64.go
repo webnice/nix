@@ -126,7 +126,7 @@ func (i *Int64) UnmarshalJSON(data []byte) (err error) {
 		i.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Int64", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errInt64Unmarshal, reflect.TypeOf(v).Name())
 	}
 	i.Valid = err == nil
 

@@ -91,12 +91,12 @@ func (i *IP) Scan(value any) (err error) {
 	case string:
 		i.IP = net.ParseIP(x)
 		if i.IP == nil {
-			err = fmt.Errorf("can't parse %q as IP address", x)
+			err = fmt.Errorf(errIPParse, x)
 		}
 	case []byte:
 		i.IP = append(net.IP(nil), x...)
 	default:
-		err = fmt.Errorf("can't scan type %T into nix.IP: %v", value, value)
+		err = fmt.Errorf(errIPScan, value, value)
 	}
 	i.Valid = err == nil
 
@@ -132,16 +132,14 @@ func (i *IP) UnmarshalJSON(data []byte) (err error) {
 		}
 		i.IP = net.ParseIP(str)
 		if i.IP == nil {
-			err = fmt.Errorf("can't parse %q as IP address", str)
+			err = fmt.Errorf(errIPParse, str)
 		}
 	case map[string]any:
 		var rex *regexp.Regexp
 		_, ipOK := x["IP"].(string)
 		valid, validOK := x["Valid"].(bool)
 		if !ipOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.IP requires key "IP" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["IP"], x["Valid"])
+			return fmt.Errorf(errIPObject, x["IP"], x["Valid"])
 		}
 		rex = regexp.MustCompile(`"IP"\s*:\s*"([^"]+)"`)
 		if arr := rex.FindStringSubmatch(string(data)); len(arr) == 2 {
@@ -150,7 +148,7 @@ func (i *IP) UnmarshalJSON(data []byte) (err error) {
 		}
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %v into Go value of type nix.IP", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errIPUnmarshal, reflect.TypeOf(v).Name())
 	}
 	i.Valid = err == nil
 
@@ -190,7 +188,7 @@ func (i *IP) UnmarshalText(text []byte) (err error) {
 	default:
 		i.IP = net.ParseIP(str)
 		if i.IP == nil {
-			err = fmt.Errorf("can't parse %q as IP address", str)
+			err = fmt.Errorf(errIPParse, str)
 		}
 	}
 	i.Valid = err == nil

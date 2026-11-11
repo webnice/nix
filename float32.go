@@ -133,7 +133,7 @@ func (f *Float32) UnmarshalJSON(data []byte) (err error) {
 		f.Valid = false
 		return
 	default:
-		err = fmt.Errorf("can't unmarshal %q into go value of type nix.Float32", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errFloat32Unmarshal, reflect.TypeOf(v).Name())
 	}
 	f.Valid = err == nil
 

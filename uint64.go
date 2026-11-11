@@ -129,9 +129,7 @@ func (u *Uint64) UnmarshalJSON(data []byte) (err error) {
 		_, uiOK := x["Uint64"].(float64)
 		valid, validOK := x["Valid"].(bool)
 		if !uiOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.Uint64 requires key "Uint64" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["Uint64"], x["Valid"])
+			return fmt.Errorf(errUint64Object, x["Uint64"], x["Valid"])
 		}
 		// TODO: Надо подумать как сделать лучше...
 		rex = regexp.MustCompile(`"Uint64"\s*:\s*([0-9]+)`)
@@ -141,7 +139,7 @@ func (u *Uint64) UnmarshalJSON(data []byte) (err error) {
 		}
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %v into Go value of type nix.Uint64", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errUint64Unmarshal, reflect.TypeOf(v).Name())
 	}
 	u.Valid = err == nil
 

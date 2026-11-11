@@ -133,7 +133,7 @@ func (n *Nullable[T]) UnmarshalJSON(data []byte) (err error) {
 	const nullString = "null"
 
 	if len(data) == 0 {
-		return fmt.Errorf("empty data")
+		return fmt.Errorf(errNullableEmpty)
 	}
 	if string(data) == nullString {
 		n.Reset()

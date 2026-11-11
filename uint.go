@@ -135,9 +135,7 @@ func (u *Uint) UnmarshalJSON(data []byte) (err error) {
 		_, uiOK := x["Uint"].(float64)
 		valid, validOK := x["Valid"].(bool)
 		if !uiOK || !validOK {
-			return fmt.Errorf(`unmarshalling object into Go value of type nix.Uint requires key "Uint" to be of type `+
-				`string and key "Valid" to be of type bool; `+
-				`found %T and %T, respectively`, x["Uint"], x["Valid"])
+			return fmt.Errorf(errUintObject, x["Uint"], x["Valid"])
 		}
 		rex = regexp.MustCompile(`"Uint"\s*:\s*([0-9]+)`)
 		if arr := rex.FindStringSubmatch(string(data)); len(arr) == 2 {
@@ -146,7 +144,7 @@ func (u *Uint) UnmarshalJSON(data []byte) (err error) {
 		}
 		return
 	default:
-		err = fmt.Errorf("Can't unmarshal %v into Go value of type nix.Uint", reflect.TypeOf(v).Name())
+		err = fmt.Errorf(errUintUnmarshal, reflect.TypeOf(v).Name())
 	}
 	u.Valid = err == nil
 
