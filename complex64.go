@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // Complex64 Объект complex64, допускающий значение nil.

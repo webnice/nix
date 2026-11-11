@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // IP Объект net.IP, допускающий значение nil.

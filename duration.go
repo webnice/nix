@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // Duration Объект time.Duration, допускающий значение nil.

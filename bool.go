@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // Bool Объект boolean, допускающий значение nil.

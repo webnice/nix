@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // RawMessage Объект json.RawMessage, допускающий значение nil.

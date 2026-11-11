@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/webnice/nix/wrapper"
+	"github.com/webnice/nix/v2/wrapper"
 )
 
 // Time Объект time.Time, допускающий значение nil.

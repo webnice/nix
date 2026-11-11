@@ -1,7 +1,7 @@
 # nix
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/webnice/nix.svg)](https://pkg.go.dev/github.com/webnice/nix)
-[![Coverage Status](https://coveralls.io/repos/github/webnice/nix/badge.svg?branch=master%0Av2)](https://coveralls.io/github/webnice/nix?branch=master%0Av2)
+[![GoDoc](https://pkg.go.dev/badge/github.com/webnice/nix/v2.svg)](https://pkg.go.dev/github.com/webnice/nix/v2)
+[![Coverage Status](https://coveralls.io/repos/github/webnice/nix/badge.svg?branch=v2)](https://coveralls.io/github/webnice/nix?branch=v2)
 
 Библиотека golang
 
@@ -38,14 +38,14 @@ GORM, sqlx и другими ORM), интерфейсы кодеков `encoding
 ## Установка
 
 ```bash
-go get -u github.com/webnice/nix
+go get -u github.com/webnice/nix/v2
 ```
 
 Подключение:
 
 ```go
 import (
-	"github.com/webnice/nix"
+	"github.com/webnice/nix/v2"
 )
 ```
 
@@ -197,7 +197,7 @@ _ = stage
 import nul "gopkg.in/webnice/lin.v1/nl"
 
 // Стало:
-import "github.com/webnice/nix"
+import "github.com/webnice/nix/v2"
 ```
 
 Далее по коду заменяется префикс `nul.` на `nix.`: `nul.Time` → `nix.Time`,
