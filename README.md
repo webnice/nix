@@ -1,7 +1,7 @@
 # nix
 
 [![GoDoc](https://pkg.go.dev/badge/github.com/webnice/nix/v2.svg)](https://pkg.go.dev/github.com/webnice/nix/v2)
-[![Coverage Status](https://coveralls.io/repos/github/webnice/nix/badge.svg?branch=v2)](https://coveralls.io/github/webnice/nix?branch=v2)
+[![Coverage Status](https://coveralls.io/repos/github/webnice/nix/badge.svg?branch=master%0Av2)](https://coveralls.io/github/webnice/nix?branch=master%0Av2)
 
 Библиотека golang
 
